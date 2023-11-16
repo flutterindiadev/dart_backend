@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:14.1
+    ports:
+      - '8090:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: dart_backend
+      POSTGRES_PASSWORD: "3_I4vj4mja9UHGnmSu98vGuw9X3oE0Dt"
+    volumes:
+      - dart_backend_data:/var/lib/postgresql/data
+  redis:
+    image: redis:6.2.6
+    ports:
+      - '8091:6379'
+    command: redis-server --requirepass "kDuL2VVAtBduj9Pt-VvNbBnIzS2yuGtA"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+volumes:
+  dart_backend_data:
