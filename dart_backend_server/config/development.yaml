@@ -34,7 +34,7 @@ database:
   name: dart_backend
   user: postgres
 
-# This is the setup for Redis.
+# This is the setup for Redis.ˀ
 redis:
   enabled: false
   host: localhost

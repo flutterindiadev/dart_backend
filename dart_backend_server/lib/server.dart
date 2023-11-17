@@ -1,9 +1,11 @@
-import 'package:serverpod/serverpod.dart';
-
 import 'package:dart_backend_server/src/web/routes/root.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server/gmail.dart';
+import 'package:serverpod/serverpod.dart';
+import 'package:serverpod_auth_server/module.dart' as auth;
 
-import 'src/generated/protocol.dart';
 import 'src/generated/endpoints.dart';
+import 'src/generated/protocol.dart';
 
 // This is the starting point of your Serverpod server. In most cases, you will
 // only need to make additions to this file if you add future calls,  are
@@ -28,6 +30,50 @@ void run(List<String> args) async {
     RouteStaticDirectory(serverDirectory: 'static', basePath: '/'),
     '/*',
   );
+
+  auth.AuthConfig.set(auth.AuthConfig(
+    sendValidationEmail: (session, email, validationCode) async {
+      final gmailEmail = session.serverpod.getPassword('gmailEmail')!;
+      final gmailPassword = session.serverpod.getPassword('gmailPassword')!;
+
+      final smtpServer = gmail(gmailEmail, gmailPassword);
+
+      final message = Message()
+        ..from = Address(gmailEmail)
+        ..recipients.add(email)
+        ..subject = 'Verification code for Serverpod'
+        ..html = 'Your verification code is: $validationCode';
+      try {
+        await send(message, smtpServer);
+      } catch (error) {
+        print(error);
+        return false;
+      }
+
+      return true;
+    },
+    sendPasswordResetEmail: (session, userInfo, validationCode) async {
+      final gmailEmail = session.serverpod.getPassword('gmailEmail')!;
+      final gmailPassword = session.serverpod.getPassword('gmailPassword')!;
+
+      final smtpServer = gmail(gmailEmail, gmailPassword);
+
+      final message = Message()
+        ..from = Address(gmailEmail)
+        ..recipients.add(userInfo.email)
+        ..subject = 'Verification code for Serverpod'
+        ..html = 'Your verification code is: $validationCode';
+
+      try {
+        await send(message, smtpServer);
+      } catch (error) {
+        print(error);
+        return false;
+      }
+
+      return true;
+    },
+  ));
 
   // Start the server.
   await pod.start();
